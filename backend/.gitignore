@@ -1,0 +1,36 @@
+# Python & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Secrets
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Databases
+*.db
+*.sqlite3
+sql_app.db
+careerverse.db
+
+# User Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Development Guides & Scratch Files
+implementation_plan.md
+deployment_guide.md
+walkthrough.md
+task.md
+plan.md
+*.log
+
+# OS Specific
+.DS_Store
+Thumbs.db
