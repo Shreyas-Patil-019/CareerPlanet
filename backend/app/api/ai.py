@@ -17,8 +17,22 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-groq_api_key = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=groq_api_key) if groq_api_key else None
+def get_groq_client():
+    backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    env_path = os.path.join(backend_dir, ".env")
+    if os.path.exists(env_path):
+        load_dotenv(dotenv_path=env_path, override=True)
+    else:
+        load_dotenv(override=True)
+    
+    key = os.getenv("GROQ_API_KEY")
+    if key and key.strip() and not key.strip().startswith("your_"):
+        try:
+            return Groq(api_key=key.strip())
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq client: {e}")
+            return None
+    return None
 
 
 from typing import List, Dict, Optional
@@ -32,10 +46,32 @@ class ChatRequest(BaseModel):
     context: Optional[str] = ""
 
 
+def create_chat_completion(client, messages, max_tokens=1024, temperature=0.7, response_format=None):
+    candidate_models = ["groq/compound-mini", "openai/gpt-oss-20b", "qwen/qwen3.6-27b", "llama-3.1-8b-instant"]
+    last_error = None
+    for model_name in candidate_models:
+        try:
+            kwargs = {
+                "model": model_name,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            }
+            if response_format:
+                kwargs["response_format"] = response_format
+            return client.chat.completions.create(**kwargs)
+        except Exception as e:
+            logger.warning(f"Groq model {model_name} failed: {e}")
+            last_error = e
+    if last_error:
+        raise last_error
+
+
 # ─── CHAT ENDPOINT ────────────────────────────────────────────────────────────
 
 @router.post("/chat")
 def ai_chat(req: ChatRequest):
+    client = get_groq_client()
     if not client:
         return {
             "response": (
@@ -74,8 +110,8 @@ Always use relevant emojis sparingly to make responses engaging."""
             role = "assistant" if msg.role == "ai" else "user"
             formatted_messages.append({"role": role, "content": msg.content})
 
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+        response = create_chat_completion(
+            client=client,
             messages=formatted_messages,
             max_tokens=1024,
             temperature=0.7
@@ -118,6 +154,7 @@ async def analyze_resume_ai(file: UploadFile = File(...)):
 
 def _analyze_text(text: str) -> dict:
     """Core analysis function — used by both the standalone endpoint and resume upload."""
+    client = get_groq_client()
     if not client:
         return _fallback_analysis(text)
 
@@ -159,8 +196,8 @@ Resume Text (first 4000 chars):
 {text[:4000]}"""
 
     try:
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+        response = create_chat_completion(
+            client=client,
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             max_tokens=1500,
