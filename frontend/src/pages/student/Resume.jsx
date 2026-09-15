@@ -234,14 +234,14 @@ const Resume = () => {
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>Our AI models are scanning your experience & ATS keywords</p>
                 </div>
               ) : (
-                <div style={{ zIndex: 1 }}>
-                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--surface-3)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', textAlign: 'center' }}>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--surface-3)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', marginBottom: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', margin: '0 auto 1.5rem auto' }}>
                     📄
                   </div>
-                  <p style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                  <p style={{ fontSize: '1.35rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem', textAlign: 'center' }}>
                     {isDragging ? 'Drop your PDF here' : 'Drag & drop your resume PDF'}
                   </p>
-                  <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9375rem' }}>or click to select from your device</p>
+                  <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9375rem', textAlign: 'center' }}>or click to select from your device</p>
                 </div>
               )}
               <input 

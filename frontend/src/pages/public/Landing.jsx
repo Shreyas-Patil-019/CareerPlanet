@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const companies = [
@@ -60,29 +60,31 @@ const features = [
 ];
 
 const slowFadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
 };
 
 const slowStagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.2 } },
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
 };
 
 export default function Landing() {
   const isLoggedIn = !!localStorage.getItem('token');
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll();
-  const yHeroText = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const scalePlanet = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+  const yHeroText = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const scalePlanet = useTransform(scrollYProgress, [0, 0.5], [1, 1.15]);
+
+  const rawMouseX = useMotionValue(0);
+  const rawMouseY = useMotionValue(0);
+  const smoothMouseX = useSpring(rawMouseX, { stiffness: 50, damping: 20 });
+  const smoothMouseY = useSpring(rawMouseY, { stiffness: 50, damping: 20 });
 
   const handleMouseMove = (e) => {
     const { clientX, clientY } = e;
     const { innerWidth, innerHeight } = window;
-    setMousePos({
-      x: (clientX / innerWidth - 0.5) * 20,
-      y: (clientY / innerHeight - 0.5) * 20,
-    });
+    rawMouseX.set((clientX / innerWidth - 0.5) * 20);
+    rawMouseY.set((clientY / innerHeight - 0.5) * 20);
   };
 
   return (
@@ -159,9 +161,11 @@ export default function Landing() {
             x: '-50%', 
             y: '-50%',
             scale: scalePlanet,
+            translateX: smoothMouseX,
+            translateY: smoothMouseY,
             zIndex: 3,
             pointerEvents: 'none',
-            transform: `translate3d(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px, 0)`
+            willChange: 'transform'
           }}
         >
           <div style={{ position: 'relative', width: 600, height: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
